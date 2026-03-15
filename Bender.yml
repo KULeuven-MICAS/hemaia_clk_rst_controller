@@ -20,7 +20,4 @@ sources:
     - hemaia_clock_divider.sv
     - hemaia_reset_controller.sv
     - hemaia_clk_rst_controller.sv
-
-    - target: not(any(tsmc16))
-      files:
-        - hemaia_pll_wrapper_rtl.sv
+    - hemaia_pll_wrapper_rtl.sv
