@@ -1,4 +1,4 @@
-module hemaia_pll (
+module hemaia_pll_wrapper (
     input  logic clk_i,
     output logic clk_o
 );

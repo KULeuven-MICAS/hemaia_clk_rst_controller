@@ -32,7 +32,7 @@ module hemaia_clk_rst_controller #(
   //////////////////////////////////////
 
   logic mst_clk_after_pll;
-  hemaia_pll i_pll (
+  hemaia_pll_wrapper i_pll (
       .clk_i(mst_clk_i),
       .clk_o(mst_clk_after_pll)
   );
