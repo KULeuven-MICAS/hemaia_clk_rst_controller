@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 package:
-  name: hemaia_d2d_link
+  name: hemaia_clk_rst_controller
   authors:
     - "Yunhao Deng <yunhao.deng@kuleuven.be>"
 
