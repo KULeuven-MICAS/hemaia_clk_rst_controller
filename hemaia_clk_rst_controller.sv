@@ -21,10 +21,14 @@ module hemaia_clk_rst_controller #(
     // Input / Output clk, reset
     input logic mst_clk_i,
     input logic mst_rst_ni,
-    input logic bypass_pll_division_i,
     output logic clk_obs_o,
     output logic [NumClocks-1:0] clk_o,
-    output logic [NumClocks-1:0] rst_no
+    output logic [NumClocks-1:0] rst_no,
+    // PLL Control signals
+    input logic bypass_pll_division_i,
+    input logic pll_en_i,
+    input logic [1:0] pll_post_div_sel_i,
+    output logic pll_lock_o
 );
 
   //////////////////////////////////////
@@ -32,9 +36,24 @@ module hemaia_clk_rst_controller #(
   //////////////////////////////////////
 
   logic mst_clk_after_pll;
-  hemaia_pll_wrapper i_pll (
+  logic pll_test_en;
+  logic [2:0] pll_test_sel;
+  logic pll_test_out;
+  assign pll_test_en = reg2hw.pll_test_en_register[0];
+  assign pll_test_sel = reg2hw.pll_test_sel_register[2:0];
+  assign hw2reg.pll_test_out_register[0] = pll_test_out;
+  hemaia_pll_wrapper #(
+      .USE_VENDOR_PLL(USE_VENDOR_PLL)
+  ) i_pll (
       .clk_i(mst_clk_i),
-      .clk_o(mst_clk_after_pll)
+      .clk_o(mst_clk_after_pll),
+      .pad_bypass_i(bypass_pll_division_i),
+      .pad_pll_en_i(pll_en_i),
+      .pad_pll_post_div_sel_i(pll_post_div_sel_i),
+      .pad_pll_lock_o(pll_lock_o),
+      .pll_test_en_i(pll_test_en),
+      .pll_test_sel_i(pll_test_sel),
+      .pll_test_out_o(pll_test_out)
   );
 
   ///////////////////////////////

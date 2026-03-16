@@ -356,6 +356,15 @@ module hemaia_clk_rst_controller_reg_top #(
   logic [7:0] clock_division_register_c28_c31_division_c31_qs;
   logic [7:0] clock_division_register_c28_c31_division_c31_wd;
   logic clock_division_register_c28_c31_division_c31_we;
+  logic [31:0] pll_test_en_register_qs;
+  logic [31:0] pll_test_en_register_wd;
+  logic pll_test_en_register_we;
+  logic [31:0] pll_test_sel_register_qs;
+  logic [31:0] pll_test_sel_register_wd;
+  logic pll_test_sel_register_we;
+  logic [31:0] pll_test_out_register_qs;
+  logic [31:0] pll_test_out_register_wd;
+  logic pll_test_out_register_we;
 
   // Register instances
   // R[reset_register]: V(False)
@@ -2874,21 +2883,105 @@ module hemaia_clk_rst_controller_reg_top #(
   );
 
 
+  // R[pll_test_en_register]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_pll_test_en_register (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pll_test_en_register_we),
+    .wd     (pll_test_en_register_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pll_test_en_register.de),
+    .d      (hw2reg.pll_test_en_register.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pll_test_en_register.q ),
+
+    // to register interface (read)
+    .qs     (pll_test_en_register_qs)
+  );
 
 
-  logic [9:0] addr_hit;
+  // R[pll_test_sel_register]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_pll_test_sel_register (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pll_test_sel_register_we),
+    .wd     (pll_test_sel_register_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pll_test_sel_register.de),
+    .d      (hw2reg.pll_test_sel_register.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pll_test_sel_register.q ),
+
+    // to register interface (read)
+    .qs     (pll_test_sel_register_qs)
+  );
+
+
+  // R[pll_test_out_register]: V(False)
+
+  prim_subreg #(
+    .DW      (32),
+    .SWACCESS("RW"),
+    .RESVAL  (32'h0)
+  ) u_pll_test_out_register (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (pll_test_out_register_we),
+    .wd     (pll_test_out_register_wd),
+
+    // from internal hardware
+    .de     (hw2reg.pll_test_out_register.de),
+    .d      (hw2reg.pll_test_out_register.d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.pll_test_out_register.q ),
+
+    // to register interface (read)
+    .qs     (pll_test_out_register_qs)
+  );
+
+
+
+
+  logic [12:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_RESET_REGISTER_OFFSET);
-    addr_hit[1] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_VALID_REGISTER_OFFSET);
-    addr_hit[2] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C0_C3_OFFSET);
-    addr_hit[3] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C4_C7_OFFSET);
-    addr_hit[4] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C8_C11_OFFSET);
-    addr_hit[5] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C12_C15_OFFSET);
-    addr_hit[6] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C16_C19_OFFSET);
-    addr_hit[7] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C20_C23_OFFSET);
-    addr_hit[8] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C24_C27_OFFSET);
-    addr_hit[9] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C28_C31_OFFSET);
+    addr_hit[ 0] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_RESET_REGISTER_OFFSET);
+    addr_hit[ 1] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_VALID_REGISTER_OFFSET);
+    addr_hit[ 2] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C0_C3_OFFSET);
+    addr_hit[ 3] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C4_C7_OFFSET);
+    addr_hit[ 4] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C8_C11_OFFSET);
+    addr_hit[ 5] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C12_C15_OFFSET);
+    addr_hit[ 6] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C16_C19_OFFSET);
+    addr_hit[ 7] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C20_C23_OFFSET);
+    addr_hit[ 8] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C24_C27_OFFSET);
+    addr_hit[ 9] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_CLOCK_DIVISION_REGISTER_C28_C31_OFFSET);
+    addr_hit[10] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_PLL_TEST_EN_REGISTER_OFFSET);
+    addr_hit[11] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_PLL_TEST_SEL_REGISTER_OFFSET);
+    addr_hit[12] = (reg_addr == HEMAIA_CLK_RST_CONTROLLER_PLL_TEST_OUT_REGISTER_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2896,16 +2989,19 @@ module hemaia_clk_rst_controller_reg_top #(
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[8] & ~reg_be))) |
-               (addr_hit[9] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[9] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(HEMAIA_CLK_RST_CONTROLLER_PERMIT[12] & ~reg_be)))));
   end
 
   assign reset_register_reset_c0_we = addr_hit[0] & reg_we & !reg_error;
@@ -3196,6 +3292,15 @@ module hemaia_clk_rst_controller_reg_top #(
   assign clock_division_register_c28_c31_division_c31_we = addr_hit[9] & reg_we & !reg_error;
   assign clock_division_register_c28_c31_division_c31_wd = reg_wdata[31:24];
 
+  assign pll_test_en_register_we = addr_hit[10] & reg_we & !reg_error;
+  assign pll_test_en_register_wd = reg_wdata[31:0];
+
+  assign pll_test_sel_register_we = addr_hit[11] & reg_we & !reg_error;
+  assign pll_test_sel_register_wd = reg_wdata[31:0];
+
+  assign pll_test_out_register_we = addr_hit[12] & reg_we & !reg_error;
+  assign pll_test_out_register_wd = reg_wdata[31:0];
+
   // Read data return
   always_comb begin
     reg_rdata_next = '0;
@@ -3324,6 +3429,18 @@ module hemaia_clk_rst_controller_reg_top #(
         reg_rdata_next[15:8] = clock_division_register_c28_c31_division_c29_qs;
         reg_rdata_next[23:16] = clock_division_register_c28_c31_division_c30_qs;
         reg_rdata_next[31:24] = clock_division_register_c28_c31_division_c31_qs;
+      end
+
+      addr_hit[10]: begin
+        reg_rdata_next[31:0] = pll_test_en_register_qs;
+      end
+
+      addr_hit[11]: begin
+        reg_rdata_next[31:0] = pll_test_sel_register_qs;
+      end
+
+      addr_hit[12]: begin
+        reg_rdata_next[31:0] = pll_test_out_register_qs;
       end
 
       default: begin
