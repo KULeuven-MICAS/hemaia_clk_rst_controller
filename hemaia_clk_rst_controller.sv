@@ -25,7 +25,7 @@ module hemaia_clk_rst_controller #(
     output logic [NumClocks-1:0] clk_o,
     output logic [NumClocks-1:0] rst_no,
     // PLL Control signals
-    input logic bypass_pll_division_i,
+    input logic pll_bypass_i,
     input logic pll_en_i,
     input logic [1:0] pll_post_div_sel_i,
     output logic pll_lock_o
@@ -47,7 +47,7 @@ module hemaia_clk_rst_controller #(
   ) i_pll (
       .clk_i(mst_clk_i),
       .clk_o(mst_clk_after_pll),
-      .pad_bypass_i(bypass_pll_division_i),
+      .pad_pll_bypass_i(pll_bypass_i),
       .pad_pll_en_i(pll_en_i),
       .pad_pll_post_div_sel_i(pll_post_div_sel_i),
       .pad_pll_lock_o(pll_lock_o),
@@ -320,7 +320,7 @@ module hemaia_clk_rst_controller #(
     end
   endgenerate
 
-  assign clk_o = bypass_pll_division_i ? {NumClocks{mst_clk_i}} : clocks_after_division;
+  assign clk_o = pll_bypass_i ? {NumClocks{mst_clk_i}} : clocks_after_division;
 
   logic clk_obs_after_division;
   hemaia_clock_divider #(
@@ -335,7 +335,7 @@ module hemaia_clk_rst_controller #(
       .clk_o(clk_obs_after_division)
   );
 
-  assign clk_obs_o = bypass_pll_division_i ? mst_clk_i : clk_obs_after_division;
+  assign clk_obs_o = pll_bypass_i ? mst_clk_i : clk_obs_after_division;
 
   //////////////////////////////
   //    Reset synchronizer    //

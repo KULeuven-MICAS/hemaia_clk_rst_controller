@@ -6,7 +6,7 @@ module hemaia_pll_wrapper #(
     // Output PLL clock (4.8 GHz)
     output logic clk_o,
     // Control signals
-    input  logic pad_bypass_i,
+    input  logic pad_pll_bypass_i,
     input  logic pad_pll_en_i,
     input  logic [1:0] pad_pll_post_div_sel_i,
     output logic pad_pll_lock_o,
