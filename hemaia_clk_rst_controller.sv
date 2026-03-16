@@ -2,6 +2,7 @@
 `include "register_interface/typedef.svh"
 
 module hemaia_clk_rst_controller #(
+    parameter int USE_VENDOR_PLL = 0, // Set to 1 to use the vendor PLL, 0 to bypass the PLL and use the input clock directly
     parameter int NumClocks = 4,
     parameter int MaxDivisionWidth = 8,  // Maximum width for clock division
     parameter int DefaultDivision[NumClocks] = '{default: 1},
@@ -30,7 +31,9 @@ module hemaia_clk_rst_controller #(
     input logic [1:0] pll_post_div_sel_i,
     output logic pll_lock_o
 );
-
+  import hemaia_clk_rst_controller_reg_pkg::*;
+  hemaia_clk_rst_controller_reg2hw_t reg2hw;
+  hemaia_clk_rst_controller_hw2reg_t hw2reg;
   //////////////////////////////////////
   //    PLL (Not implemented yet)     //
   //////////////////////////////////////
@@ -74,7 +77,7 @@ module hemaia_clk_rst_controller #(
   //    CONTROLLER     //
   ///////////////////////
 
-  import hemaia_clk_rst_controller_reg_pkg::*;
+  
   `REG_BUS_TYPEDEF_ALL(reg_a48_d32, logic [47:0], logic [31:0], logic [3:0])
 
   reg_a48_d32_req_t controller_req;
@@ -95,9 +98,6 @@ module hemaia_clk_rst_controller #(
       .reg_req_o     (controller_req),
       .reg_rsp_i     (controller_rsp)
   );
-
-  hemaia_clk_rst_controller_reg2hw_t reg2hw;
-  hemaia_clk_rst_controller_hw2reg_t hw2reg;
 
   hemaia_clk_rst_controller_reg_top #(
       .reg_req_t(reg_a48_d32_req_t),
