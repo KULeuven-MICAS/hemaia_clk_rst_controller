@@ -2,6 +2,7 @@
 `include "register_interface/typedef.svh"
 
 module hemaia_clk_rst_controller #(
+    parameter int USE_VENDOR_PLL = 0, // Set to 1 to use the vendor PLL, 0 to bypass the PLL and use the input clock directly
     parameter int NumClocks = 4,
     parameter int MaxDivisionWidth = 8,  // Maximum width for clock division
     parameter int DefaultDivision[NumClocks] = '{default: 1},
@@ -21,20 +22,41 @@ module hemaia_clk_rst_controller #(
     // Input / Output clk, reset
     input logic mst_clk_i,
     input logic mst_rst_ni,
-    input logic bypass_pll_division_i,
     output logic clk_obs_o,
     output logic [NumClocks-1:0] clk_o,
-    output logic [NumClocks-1:0] rst_no
+    output logic [NumClocks-1:0] rst_no,
+    // PLL Control signals
+    input logic pll_bypass_i,
+    input logic pll_en_i,
+    input logic [1:0] pll_post_div_sel_i,
+    output logic pll_lock_o
 );
-
+  import hemaia_clk_rst_controller_reg_pkg::*;
+  hemaia_clk_rst_controller_reg2hw_t reg2hw;
+  hemaia_clk_rst_controller_hw2reg_t hw2reg;
   //////////////////////////////////////
   //    PLL (Not implemented yet)     //
   //////////////////////////////////////
 
   logic mst_clk_after_pll;
-  hemaia_pll_wrapper i_pll (
+  logic pll_test_en;
+  logic [2:0] pll_test_sel;
+  logic pll_test_out;
+  assign pll_test_en = reg2hw.pll_test_en_register[0];
+  assign pll_test_sel = reg2hw.pll_test_sel_register[2:0];
+  assign hw2reg.pll_test_out_register[0] = pll_test_out;
+  hemaia_pll_wrapper #(
+      .USE_VENDOR_PLL(USE_VENDOR_PLL)
+  ) i_pll (
       .clk_i(mst_clk_i),
-      .clk_o(mst_clk_after_pll)
+      .clk_o(mst_clk_after_pll),
+      .pad_pll_bypass_i(pll_bypass_i),
+      .pad_pll_en_i(pll_en_i),
+      .pad_pll_post_div_sel_i(pll_post_div_sel_i),
+      .pad_pll_lock_o(pll_lock_o),
+      .pll_test_en_i(pll_test_en),
+      .pll_test_sel_i(pll_test_sel),
+      .pll_test_out_o(pll_test_out)
   );
 
   ///////////////////////////////
@@ -55,7 +77,7 @@ module hemaia_clk_rst_controller #(
   //    CONTROLLER     //
   ///////////////////////
 
-  import hemaia_clk_rst_controller_reg_pkg::*;
+  
   `REG_BUS_TYPEDEF_ALL(reg_a48_d32, logic [47:0], logic [31:0], logic [3:0])
 
   reg_a48_d32_req_t controller_req;
@@ -76,9 +98,6 @@ module hemaia_clk_rst_controller #(
       .reg_req_o     (controller_req),
       .reg_rsp_i     (controller_rsp)
   );
-
-  hemaia_clk_rst_controller_reg2hw_t reg2hw;
-  hemaia_clk_rst_controller_hw2reg_t hw2reg;
 
   hemaia_clk_rst_controller_reg_top #(
       .reg_req_t(reg_a48_d32_req_t),
@@ -301,7 +320,7 @@ module hemaia_clk_rst_controller #(
     end
   endgenerate
 
-  assign clk_o = bypass_pll_division_i ? {NumClocks{mst_clk_i}} : clocks_after_division;
+  assign clk_o = pll_bypass_i ? {NumClocks{mst_clk_i}} : clocks_after_division;
 
   logic clk_obs_after_division;
   hemaia_clock_divider #(
@@ -316,7 +335,7 @@ module hemaia_clk_rst_controller #(
       .clk_o(clk_obs_after_division)
   );
 
-  assign clk_obs_o = bypass_pll_division_i ? mst_clk_i : clk_obs_after_division;
+  assign clk_obs_o = pll_bypass_i ? mst_clk_i : clk_obs_after_division;
 
   //////////////////////////////
   //    Reset synchronizer    //
