@@ -20,7 +20,7 @@ module hemaia_pll_wrapper #(
   end else begin
     // If not using the vendor PLL, pass the input clock directly to the output and set control signals to default values
     assign clk_o = clk_i; // Pass the input clock directly to the output
-    assign pad_pll_lock_o = 1'b1; // Indicate that the PLL is always locked
+    assign pad_pll_lock_o = 1'b0; // Indicate that the PLL is not present
     assign pll_test_out_o = 1'b0; // Set test output to a default value
   end
 endmodule
