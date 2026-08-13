@@ -1,3 +1,4 @@
+`timescale 1ps/1fs
 module hemaia_pll_wrapper #(
     parameter int USE_VENDOR_PLL = 0
 ) (

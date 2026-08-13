@@ -41,7 +41,7 @@ endmodule
     (* KEEP_HIERARCHY = "TRUE" *)
 module hemaia_clock_divider #(
     parameter int MaxDivisionWidth = 4,
-    parameter int DefaultDivision  = 1
+    parameter int DefaultDivision  = 16
 ) (
     input logic clk_i,
     input logic rst_ni,
@@ -105,21 +105,21 @@ module hemaia_clock_divider #(
       clk_ungated, clk_divided, clk_odd, clk_even;
 
   (* DONT_TOUCH = "TRUE" *)
-  tc_clk_and2 i_clk_odd_gen (
+  tc_clk_and2_hs i_clk_odd_gen (
       .clk0_i(raw_div_d1),
       .clk1_i(raw_div_d2),
       .clk_o (clk_odd)
   );
 
   (* DONT_TOUCH = "TRUE" *)
-  tc_clk_and2 i_clk_even_gen (
+  tc_clk_and2_hs i_clk_even_gen (
       .clk0_i(raw_div_d1),
       .clk1_i(1'b1),
       .clk_o (clk_even)
   );
 
   (* DONT_TOUCH = "TRUE" *)
-  tc_clk_mux2 i_clk_divided_mux (
+  tc_clk_mux2_hs i_clk_divided_mux (
       .clk0_i(clk_even),
       .clk1_i(clk_odd),
       .clk_sel_i(divisor_q[0]),
@@ -133,7 +133,7 @@ module hemaia_clock_divider #(
   end
 
   (* DONT_TOUCH = "TRUE" *)
-  tc_clk_mux2 i_clk_o_mux (
+  tc_clk_mux2_hs i_clk_o_mux (
       .clk0_i(clk_divided),
       .clk1_i(clk_i),
       .clk_sel_i(clk_sel_o_mux),

@@ -1,11 +1,12 @@
 `include "common_cells/assertions.svh"
 `include "register_interface/typedef.svh"
 
+`timescale 1ps / 1fs
 module hemaia_clk_rst_controller #(
     parameter int USE_VENDOR_PLL = 0, // Set to 1 to use the vendor PLL, 0 to bypass the PLL and use the input clock directly
     parameter int NumClocks = 4,
     parameter int MaxDivisionWidth = 8,  // Maximum width for clock division
-    parameter int DefaultDivision[NumClocks] = '{default: 1},
+    parameter int DefaultDivision[NumClocks] = '{default: 16},
     parameter int ResetDelays[NumClocks] = '{default: 1},
     parameter type axi_lite_req_t = logic,
     parameter type axi_lite_rsp_t = logic
@@ -25,7 +26,7 @@ module hemaia_clk_rst_controller #(
     output logic clk_obs_o,
     output logic [NumClocks-1:0] clk_o,
     output logic [NumClocks-1:0] rst_no,
-    // PLL Control signals
+    // PLL control signals
     input logic pll_bypass_i,
     input logic pll_en_i,
     input logic [1:0] pll_post_div_sel_i,
@@ -34,6 +35,7 @@ module hemaia_clk_rst_controller #(
   import hemaia_clk_rst_controller_reg_pkg::*;
   hemaia_clk_rst_controller_reg2hw_t reg2hw;
   hemaia_clk_rst_controller_hw2reg_t hw2reg;
+
   //////////////////////////////////////
   //    PLL (Not implemented yet)     //
   //////////////////////////////////////
@@ -73,11 +75,29 @@ module hemaia_clk_rst_controller #(
     end
   end
 
+  ///////////////////////////////////////////
+  //    Reset Pipeline for Clock Dividers  //
+  ///////////////////////////////////////////
+  // Pipeline stages for reset distribution to clock dividers.
+  // These registers will be replicated by DC (set_register_replication)
+  // and placed near each clock divider, minimizing CTS skew for recovery checks.
+  // Async reset uses mst_rst_ni directly (false-pathed in SDC).
+  logic mst_rst_pipe_d1, mst_rst_pipe_d2;
+  always_ff @(posedge mst_clk_after_pll or negedge mst_rst_ni) begin
+    if (~mst_rst_ni) begin
+      mst_rst_pipe_d1 <= 1'b0;
+      mst_rst_pipe_d2 <= 1'b0;
+    end else begin
+      mst_rst_pipe_d1 <= mst_rst_n_d2_mst_clk;
+      mst_rst_pipe_d2 <= mst_rst_pipe_d1;
+    end
+  end
+
   ///////////////////////
   //    CONTROLLER     //
   ///////////////////////
 
-  
+
   `REG_BUS_TYPEDEF_ALL(reg_a48_d32, logic [47:0], logic [31:0], logic [3:0])
 
   reg_a48_d32_req_t controller_req;
@@ -255,8 +275,8 @@ module hemaia_clk_rst_controller #(
   // Synchronize valid bits into high frequencies
   logic [31:0] clock_division_reg_valid_d1;
   logic [31:0] clock_division_reg_valid_d2;
-  always_ff @(posedge mst_clk_after_pll or negedge mst_rst_n_d2_mst_clk) begin
-    if (~mst_rst_n_d2_mst_clk) begin
+  always_ff @(posedge mst_clk_after_pll or negedge mst_rst_pipe_d2) begin
+    if (~mst_rst_pipe_d2) begin
       clock_division_reg_valid_d1 <= '0;
       clock_division_reg_valid_d2 <= '0;
     end else begin
@@ -311,7 +331,7 @@ module hemaia_clk_rst_controller #(
           .DefaultDivision (DefaultDivision[i])
       ) i_clk_divider (
           .clk_i(mst_clk_after_pll),
-          .rst_ni(mst_rst_n_d2_mst_clk),
+          .rst_ni(mst_rst_pipe_d2),
           .test_mode_i(test_mode_i),
           .divisor_i(clock_division_reg_concat[i][MaxDivisionWidth-1:0]),
           .divisor_valid_i(clock_division_reg_valid_d2[i]),
@@ -320,7 +340,12 @@ module hemaia_clk_rst_controller #(
     end
   endgenerate
 
-  assign clk_o = pll_bypass_i ? {NumClocks{mst_clk_i}} : clocks_after_division;
+  tc_clk_mux2_hs i_clk_o_mux[NumClocks-1:0] (
+      .clk0_i   (clocks_after_division),
+      .clk1_i   ({NumClocks{mst_clk_i}}),
+      .clk_sel_i({NumClocks{pll_bypass_i}}),
+      .clk_o    (clk_o)
+  );
 
   logic clk_obs_after_division;
   hemaia_clock_divider #(
@@ -328,7 +353,7 @@ module hemaia_clk_rst_controller #(
       .DefaultDivision (128)
   ) i_clk_divider (
       .clk_i(mst_clk_after_pll),
-      .rst_ni(mst_rst_n_d2_mst_clk),
+      .rst_ni(mst_rst_pipe_d2),
       .test_mode_i(test_mode_i),
       .divisor_i(8'd128),
       .divisor_valid_i('0),
